@@ -5,11 +5,10 @@ using mview = matrix_view<std::complex<double>>;
 
 std::complex<double> solver::get_Z() {
 
-  auto _ = range();
   std::complex<double> Z = 0;
 
   for (int Gamma=0; Gamma<n_blocks; Gamma++)
-      Z += 1_j * trace(R_les[Gamma][{params.n_t-1,params.n_t-1}]);
+      Z += 1_j * trace(R_les[Gamma][params.n_t-1]);
   return Z;
 
 }
@@ -36,10 +35,9 @@ void solver::compute_G_les() {
             auto c_mat = atom.c_matrix(ind_c, Gamma_p);
             auto cdag_mat = atom.cdag_matrix(ind_cdag, Gamma);
 
-            for (int t=0; t<params.n_t; t++)
-              for (int tp=0; tp<params.n_t; tp++)
-                G_les[bln][{t,tp}](a, b) -= 1_j * trace(R_gtr[Gamma][{tp,t}] *
-                                            c_mat * R_les[Gamma_p][{t,tp}] * cdag_mat);
+            for (int it=0; it<2*params.n_t-1; it++)
+                G_les[bln][it](a, b) -= 1_j * trace(R_gtr[Gamma][2*params.n_t-2-it] *
+                                            c_mat * R_les[Gamma_p][it] * cdag_mat);
 
          }
         }
@@ -73,10 +71,9 @@ void solver::compute_G_gtr() {
             auto c_mat = atom.c_matrix(ind_c, Gamma_p);
             auto cdag_mat = atom.cdag_matrix(ind_cdag, Gamma);
 
-            for (int t=0; t<params.n_t; t++)
-              for (int tp=0; tp<params.n_t; tp++)
-                G_gtr[bln][{t,tp}](a, b) += 1_j * trace(R_les[Gamma][{tp,t}] *
-                                            c_mat * R_gtr[Gamma_p][{t,tp}] * cdag_mat);
+            for (int it=0; it<2*params.n_t-1; it++)
+                G_gtr[bln][it](a, b) += 1_j * trace(R_les[Gamma][2*params.n_t-2-it] *
+                                            c_mat * R_gtr[Gamma_p][it] * cdag_mat);
 
          }
         }

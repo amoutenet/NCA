@@ -66,64 +66,130 @@ c.add_member(c_name = "dt",
              doc = """""")
 
 c.add_member(c_name = "Delta_gtr",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime> >",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
              read_only= False,
              doc = """""")
 
 c.add_member(c_name = "Delta_les",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime> >",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
              read_only= False,
              doc = """""")
 
 c.add_member(c_name = "G_gtr",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime> >",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
              read_only= False,
              doc = """""")
 
 c.add_member(c_name = "G_les",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime> >",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
              read_only= False,
              doc = """""")
 
 c.add_member(c_name = "hamilt",
-    c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
+        c_type = "std::vector<triqs::arrays::matrix<std::complex<double>>>",
              read_only= False,
              doc = """""")
 
 c.add_member(c_name = "R_gtr",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime> >",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
              read_only= False,
              doc = """""")
 
-c.add_member(c_name = "Rdot_gtr",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime> >",
+c.add_member(c_name = "R_tilde_gtr",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
              read_only= False,
              doc = """""")
 
 c.add_member(c_name = "S_gtr",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime> >",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "S_tilde_gtr",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
              read_only= False,
              doc = """""")
 
 c.add_member(c_name = "R_les",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime> >",
-             read_only= False,
-             doc = """""")
-
-c.add_member(c_name = "Rdot_les",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime> >",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
              read_only= False,
              doc = """""")
 
 c.add_member(c_name = "S_les",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime> >",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
              read_only= False,
              doc = """""")
 
-c.add_member(c_name = "Q_les",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime> >",
+c.add_member(c_name = "temp_R",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
              read_only= False,
              doc = """""")
+
+c.add_member(c_name = "fit_R",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "temp_S",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "fit_S",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "R_gtr_w",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::refreq>",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "R_tilde_gtr_w",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::refreq>",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "S_tilde_gtr_w",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::refreq>",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "R_les_w",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::refreq>",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "S_les_w",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::refreq>",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "temp_R_w",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::refreq>",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "fit_R_w",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::refreq>",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "temp_S_w",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::refreq>",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "fit_S_w",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::refreq>",
+             read_only= False,
+             doc = """""")
+
+c.add_member(c_name = "rho",
+        c_type = "std::vector<double>",
+             read_only= False,
+             doc = """""")
+
 
 c.add_constructor("""(**constructor_p)""", doc = """
 +----------------+-------------------------------------------------------------------------------------------+---------+---------------+
@@ -142,17 +208,19 @@ c.add_method("""void solve (**solve_p)""",
 +--------------------------+-------------------------------------------------------------------------------------------+---------+---------------+
 | Parameter Name           | Type                                                                                      | Default | Documentation |
 +==========================+===========================================================================================+=========+===============+
-| R_init                   | std::vector<triqs::arrays::array<std::complex<double>,2>>                                 |         |               |
+| H                        | triqs::operators::many_body_operator_generic<std::complex<double>>                        |         |               |
 +--------------------------+-------------------------------------------------------------------------------------------+---------+---------------+
-| hamilt                   | std::function<triqs::operators::many_body_operator_generic<std::complex<double>>(double)> |         |               |
+| R_init                   | triqs::gfs::block_gf<triqs::gfs::retime>                                                  |         |               |
 +--------------------------+-------------------------------------------------------------------------------------------+---------+---------------+
 | tolerance                | double                                                                                    | 1e-6    |               |
++--------------------------+-------------------------------------------------------------------------------------------+---------+---------------+
+| S_threshold              | double                                                                                    | 1e-9    |               |
 +--------------------------+-------------------------------------------------------------------------------------------+---------+---------------+
 | recompute_subspaces      | bool                                                                                      | true    |               |
 +--------------------------+-------------------------------------------------------------------------------------------+---------+---------------+
 """)
 
-c.add_method("void initialize_atom_diag (std::function<triqs::operators::many_body_operator_generic<std::complex<double>>(double)> function)",
+c.add_method("void initialize_atom_diag (triqs::operators::many_body_operator_generic<std::complex<double>> H)",
                doc = """""")
 
 c.add_method("std::complex<double> get_Z()",
@@ -167,19 +235,24 @@ c = converter_(
         doc = """""",
 )
 
-c.add_member(c_name = "R_init",
-             c_type = "std::vector<triqs::arrays::array<std::complex<double>,2>>",
+c.add_member(c_name = "H",
+    c_type = "triqs::operators::many_body_operator_generic<std::complex<double>>",
              initializer = """  """,
              doc = """""")
 
-c.add_member(c_name = "hamilt",
-    c_type = "std::function<triqs::operators::many_body_operator_generic<std::complex<double>>(double)>",
+c.add_member(c_name = "R_init",
+             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
              initializer = """  """,
              doc = """""")
 
 c.add_member(c_name = "tolerance",
              c_type = "double",
              initializer = """ 1e-6 """,
+             doc = """""")
+
+c.add_member(c_name = "S_threshold",
+             c_type = "double",
+             initializer = """ 1e-9 """,
              doc = """""")
 
 c.add_member(c_name = "recompute_subspaces",

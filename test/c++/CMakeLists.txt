@@ -10,4 +10,10 @@ macro(add_test_defs name)
 endmacro()
 
 add_test_defs(anderson)
-add_test_defs(volterra)
+
+# Perf
+set(perf_sources "perf.cpp")
+add_executable(perf ${perf_sources})
+target_link_libraries(perf nca_c ${TRIQS_LIBRARY_ALL})
+include_directories(${TRIQS_INCLUDE_ALL})
+triqs_set_rpath_for_target(perf)

@@ -17,10 +17,9 @@ TEST(NCA, Anderson) {
 
   // Parameters
   double U = 4.0;
+  double beta = 2.;
   double mu = 2.0;
-  double t = 1.0;
-  double beta = 2.0;
-  int n_tau = 51;
+  double t= 1.0;
   double t_max = 2.0;
   int n_t = 10;
 
@@ -60,17 +59,17 @@ TEST(NCA, Anderson) {
   auto d_gtr_t = make_gf_from_fourier(d_gtr_w);
 
   for (auto &delta: nca_solver.Delta_gtr) {
-    for (auto const & [t,tp]: delta.mesh()) {
+    for (auto const & t: delta.mesh()) {
 	for (int a =0; a < 2; a++) {
-	  delta[t,tp](a,a) = d_gtr_t(real(dcomplex(t)) - real(dcomplex(tp)))(0,0);
+	  delta[t](a,a) = d_gtr_t(real(dcomplex(t)))(0,0);
 	}
     }
   }	
 
   for (auto &delta: nca_solver.Delta_les) {
-    for (auto const & [t,tp]: delta.mesh()) {
+    for (auto const & t: delta.mesh()) {
 	for (int a =0; a < 2; a++) {
-	  delta[t,tp](a,a) = d_les_t(real(dcomplex(t)) - real(dcomplex(tp)))(0,0);
+	  delta[t](a,a) = d_les_t(real(dcomplex(t)))(0,0);
 	}
     }
   }	
@@ -82,7 +81,7 @@ TEST(NCA, Anderson) {
     h5_write(G_file, "Delta_gtr", nca_solver.Delta_gtr);
   }
 
-  triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime>> Delta_les, Delta_gtr;
+  triqs::gfs::block_gf<triqs::gfs::retime> Delta_les, Delta_gtr;
 
   if (world.rank() == 0) {
     triqs::h5::file G_file("anderson.ref.h5", 'r');
@@ -95,37 +94,35 @@ TEST(NCA, Anderson) {
 
   // --------------------------------------------------
   
-  auto function = [U, t, mu](double time) {
-    // Define a Hamiltonian
-    many_body_operator hamilt;
-    for (int i=0; i<2; i++) {
-      hamilt += U * std::cos(time) * n("up",i) * n("down",i);
-      for (auto &s: {"up", "down"}) {
-        hamilt -= mu * n(s,i);
-      }
+  // Define a Hamiltonian
+  many_body_operator H;
+
+  for (int i=0; i<2; i++) {
+    H += U * n("up",i) * n("down",i);
+    for (auto &s: {"up", "down"}) {
+      H -= mu * n(s,i);
     }
-    for (auto &s: {"up", "down"})
-      hamilt -= t * (c_dag(s,0)*c(s,1) + c_dag(s,1)*c(s,0));
+  }
+  for (auto &s: {"up", "down"})
+    H -= t * (c_dag(s,0)*c(s,1) + c_dag(s,1)*c(s,0));
 
-    return hamilt;
-  };
+  nca_solver.initialize_atom_diag(H);
 
-  nca_solver.initialize_atom_diag(function);
-
-  std::vector<triqs::arrays::array<std::complex<double>,2>> R_init;
-  for (int Gamma=0; Gamma<nca_solver.n_blocks; Gamma++) {
-    int n = nca_solver.block_sizes[Gamma];
-    R_init.emplace_back(n, n);
-
-    for (int i=0; i<n; i++) R_init[Gamma](i,i) = 1_j * nca_solver.parity[Gamma];
+  auto R_init = nca_solver.R_gtr;
+  for (int Gamma=0; Gamma<nca_solver.n_blocks; Gamma++){
+      int n = nca_solver.block_sizes[Gamma];
+      auto id = make_unit_matrix<std::complex<double>>(n);
+      
+      for (int it=n_t-1; it<2*n_t-1; it++) R_init[Gamma][it] = 1.0 * id;
   }
 
-  nca_solver.solve({R_init, function});
+  nca_solver.solve({H,R_init});
 
   auto Z = nca_solver.get_Z();
 
   if (world.rank() == 0) {
     triqs::h5::file G_file("anderson.out.h5", 'a');
+
     h5_write(G_file, "hamilt", nca_solver.hamilt);
     h5_write(G_file, "G_les", nca_solver.G_les);
     h5_write(G_file, "G_gtr", nca_solver.G_gtr);
@@ -133,8 +130,8 @@ TEST(NCA, Anderson) {
     h5_write(G_file, "Z", Z);
   }
 
-  triqs::gfs::block_gf<triqs::gfs::retime> hamilt;
-  triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime>> G_gtr, G_les;
+  std::vector<triqs::arrays::matrix<std::complex<double>>> hamilt;
+  triqs::gfs::block_gf<triqs::gfs::retime> G_gtr, G_les;
   std::complex<double> Z_check;
 
   if (world.rank() == 0) {
@@ -144,7 +141,9 @@ TEST(NCA, Anderson) {
     h5_read(G_file, "G_gtr", G_gtr);
     h5_read(G_file, "Z", Z_check);
 
-    EXPECT_BLOCK_GF_NEAR(nca_solver.hamilt, hamilt);
+    for (int i=0; i<nca_solver.n_blocks; i++){
+      EXPECT_ARRAY_NEAR(nca_solver.hamilt[i], hamilt[i]);
+    }
 
     EXPECT_BLOCK_GF_NEAR(nca_solver.G_les, G_les);
     EXPECT_BLOCK_GF_NEAR(nca_solver.G_gtr, G_gtr);

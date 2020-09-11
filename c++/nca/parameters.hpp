@@ -12,7 +12,7 @@ struct constructor_p {
   // max real time
   double t_max;
 
-  // numer of real time points
+  // numer of positive real time points (total number of pts: 2*n_t)
   int n_t;
 
 };
@@ -20,17 +20,21 @@ struct constructor_p {
 
 struct solve_p {
 
-  std::vector<triqs::arrays::array<std::complex<double>,2>> R_init;
-
   // hamiltonian
   // type: Operator
-  std::function<triqs::operators::many_body_operator_generic<std::complex<double>>(double)> hamilt;
+  triqs::operators::many_body_operator_generic<std::complex<double>> H;
 
+  // First guess for R^>
+  triqs::gfs::block_gf<triqs::gfs::retime> R_init;
+
+  // do we want to recompute the subspace from atom_diag class?
   bool recompute_subspaces = true;
 
-  // convergence tolerence (not used yet)
+  // convergence tolerence
   double tolerance = 1e-6;
 
+  // threshold to determine the support of S
+  double S_threshold = 1e-9;
 };
 
 
@@ -42,10 +46,12 @@ struct parameters: constructor_p, solve_p {
   parameters(constructor_p const & c, solve_p const & s): constructor_p(c), solve_p(s) {}
 
   void update(solve_p const & s) {
-    tolerance = s.tolerance;
+    H = s.H;
     R_init = s.R_init;
-    hamilt = s.hamilt;
     recompute_subspaces = s.recompute_subspaces;
+    tolerance = s.tolerance;
+    S_threshold = s.S_threshold;
+
   }
 
 };
