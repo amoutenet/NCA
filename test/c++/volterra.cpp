@@ -13,60 +13,6 @@ using triqs::arrays::range;
 
 using namespace triqs::gfs;
 
-// A simple scalar case
-TEST(NCA, VolterraSimple) {
-
-  // Initialize mpi
-  triqs::mpi::communicator world;
-
-  // Parameters
-  double beta = 5.0;
-  int n_tau = 50;
-  double t_max = 1.0;
-  int n_t = 1;
-
-  // GF structure
-  gf_struct_t gf_struct{{"0", {0}}};
-  auto hamilt = n("0", 0);
-  auto function = [hamilt](double time) {return hamilt;};
-
-  triqs::arrays::matrix<std::complex<double>> H(1,1);
-
-  // Construct CTQMC solver
-  solver ns({gf_struct, beta, n_tau, t_max, n_t});
-
-  ns.initialize_atom_diag(function);
-
-  // initial conditions
-  H(0,0) = -1_j * 3;
-
-  ns.S_eq[0]() = -1_j * 2;
-  ns.R_eq[0][0](0,0) = -1;
-  ns.Rdot_eq[0][0](0,0) = 3;
-
-  // solve Volterra equation
-  for (int tau=1; tau<n_tau; tau++)
-    ns.volterra_step(ns.R_eq[0], ns.Rdot_eq[0], ns.S_eq[0], H, ns.dtau, tau, 0);
-
-  // write results to file
-  triqs::h5::file f("volterra.out.h5", 'w');
-  h5_write(f, "R_1", ns.R_eq[0]);
-  h5_write(f, "Rdot_1", ns.Rdot_eq[0]);
-
-  // read reference
-  gf<imtime> R_check, Rdot_check;
-  triqs::h5::file fc("volterra.ref.h5", 'r');
-  h5_read(fc, "R_1", R_check);
-  h5_read(fc, "Rdot_1", Rdot_check);
-
-  // compare
-  EXPECT_GF_NEAR(ns.R_eq[0], R_check);
-  EXPECT_GF_NEAR(ns.Rdot_eq[0], Rdot_check);
-
-}
-
-
-
 // A non-trivial matrix case
 TEST(NCA, VolterraMatrix) {
 
@@ -75,7 +21,6 @@ TEST(NCA, VolterraMatrix) {
 
   // Parameters
   double beta = 1.0;
-  int n_tau = 1;
   double t_max = 10.0;
   int n_t = 100;
   double U = 10;
@@ -91,7 +36,7 @@ TEST(NCA, VolterraMatrix) {
   auto Q = gf<cartesian_product<retime, retime>>{gf_mesh<cartesian_product<retime, retime>>{{0, t_max, n_t},{0, t_max, n_t}}, make_shape(n, n)};
 
   // Construct CTQMC solver
-  solver ns({gf_struct, beta, n_tau, t_max, n_t});
+  solver ns({gf_struct, t_max, n_t});
 
   ns.initialize_atom_diag(function);
      
@@ -133,7 +78,7 @@ TEST(NCA, VolterraMatrix) {
   h5_write(f, "Rdot_2", ns.Rdot_gtr[1]);
 
   // read reference
-  gf<cartesian_product<retime,retime>> R_check, Rdot_check;
+  gf<cartesian_product<retime, retime>> R_check, Rdot_check;
   triqs::h5::file fc("volterra.ref.h5", 'r');
   h5_read(fc, "R_2", R_check);
   h5_read(fc, "Rdot_2", Rdot_check);

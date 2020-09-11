@@ -1,13 +1,22 @@
 #pragma once
 
 using namespace triqs::arrays;
-using mview = matrix_view<std::complex<double>>;
 
 void solver::solve_greater() {
 
+  auto _ = range();
   auto R_gtr_old = R_gtr;
-  auto Q = R_gtr;
-  Q() = 0;
+  auto Q = R_gtr; 
+
+  for (int Gamma=0; Gamma<n_blocks; Gamma++) {
+    int n = block_sizes[Gamma];
+    auto id = make_unit_matrix<std::complex<double>>(n);
+
+    for (auto const & [t,tp] : Q[Gamma].mesh()) {
+       Q[Gamma][t,tp] = 0. * id;
+    }
+  } 
+
 
   // initial condition and guess
   for (int Gamma=0; Gamma<n_blocks; Gamma++) {
@@ -31,8 +40,13 @@ void solver::solve_greater() {
 
     // first guess for R_gtr
     for (int Gamma=0; Gamma<n_blocks; Gamma++) {
-      for (int tp=0; tp<it+1; tp++) R_gtr[Gamma][{it,tp}] = 1.0;
+      int n = block_sizes[Gamma];
+      auto id = make_unit_matrix<std::complex<double>>(n);
+
+      for (int tp=0; tp<it+1; tp++) R_gtr[Gamma][{it,tp}] = 1.0 * id;
     }
+
+    // Initialize R_gtr_old
     R_gtr_old = R_gtr;
 
     // NCA loop
@@ -48,11 +62,11 @@ void solver::solve_greater() {
 
         // get S_gtr[Gamma] from R_gtr
         for (int tp=0; tp<it+1; tp++) {
-          get_S_from_NCA(Gamma, it, tp, S_gtr, R_gtr, Delta_gtr, Delta_les, 1);
-          if (tp < it) get_S_from_NCA(Gamma, tp, it, S_gtr, R_gtr, Delta_gtr, Delta_les, 1);
+          get_S_from_NCA(Gamma, it, tp, S_gtr, R_gtr, Delta_gtr, Delta_les,1);
+          if (tp < it) get_S_from_NCA(Gamma, tp, it, S_gtr, R_gtr, Delta_gtr, Delta_les,1);
         }
 
-        int n = block_sizes[Gamma];
+	int n = block_sizes[Gamma];
 
         for (int j=0; j<it; j++) {
           volterra_step(R_gtr[Gamma], Rdot_gtr[Gamma], S_gtr[Gamma], hamilt[Gamma], Q[Gamma], dt, it, j, j);

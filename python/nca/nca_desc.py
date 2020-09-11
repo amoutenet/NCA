@@ -24,9 +24,6 @@ module.add_preamble("""
 #include <triqs/cpp2py_converters/gf.hpp>
 #include <triqs/cpp2py_converters/operators_real_complex.hpp>
 
-using aview = triqs::arrays::array_view<std::complex<double>, 3>;
-using mview = triqs::arrays::matrix_view<std::complex<double>>;
-
 """)
 
 
@@ -58,12 +55,12 @@ c.add_member(c_name = "n_particles",
              read_only= False,
              doc = """""")
 
-c.add_member(c_name = "dt",
-             c_type = "double",
+c.add_member(c_name = "parity",
+             c_type = "std::vector<int>",
              read_only= False,
              doc = """""")
 
-c.add_member(c_name = "dtau",
+c.add_member(c_name = "dt",
              c_type = "double",
              read_only= False,
              doc = """""")
@@ -78,36 +75,6 @@ c.add_member(c_name = "Delta_les",
              read_only= False,
              doc = """""")
 
-c.add_member(c_name = "Delta_mix",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::imtime> >",
-             read_only= False,
-             doc = """""")
-
-c.add_member(c_name = "Delta_mix2",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::imtime, triqs::gfs::retime> >",
-             read_only= False,
-             doc = """""")
-
-c.add_member(c_name = "Delta_mat",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::imtime>",
-             read_only= False,
-             doc = """""")
-
-c.add_member(c_name = "Delta_mat1",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::imtime, triqs::gfs::imtime> >",
-             read_only= False,
-             doc = """""")
-
-c.add_member(c_name = "Delta_mat2",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::imtime, triqs::gfs::imtime> >",
-             read_only= False,
-             doc = """""")
-
-c.add_member(c_name = "G_mat",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::imtime>",
-             read_only= False,
-             doc = """""")
-
 c.add_member(c_name = "G_gtr",
              c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::retime> >",
              read_only= False,
@@ -118,28 +85,8 @@ c.add_member(c_name = "G_les",
              read_only= False,
              doc = """""")
 
-c.add_member(c_name = "G_mix",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::imtime> >",
-             read_only= False,
-             doc = """""")
-
 c.add_member(c_name = "hamilt",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
-             read_only= False,
-             doc = """""")
-
-c.add_member(c_name = "R_eq",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::imtime>",
-             read_only= False,
-             doc = """""")
-
-c.add_member(c_name = "Rdot_eq",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::imtime>",
-             read_only= False,
-             doc = """""")
-
-c.add_member(c_name = "S_eq",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::imtime>",
+    c_type = "triqs::gfs::block_gf<triqs::gfs::retime>",
              read_only= False,
              doc = """""")
 
@@ -178,35 +125,11 @@ c.add_member(c_name = "Q_les",
              read_only= False,
              doc = """""")
 
-c.add_member(c_name = "R_mix",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::imtime> >",
-             read_only= False,
-             doc = """""")
-
-c.add_member(c_name = "Rdot_mix",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::imtime> >",
-             read_only= False,
-             doc = """""")
-
-c.add_member(c_name = "S_mix",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::imtime> >",
-             read_only= False,
-             doc = """""")
-
-c.add_member(c_name = "Q_mix",
-             c_type = "triqs::gfs::block_gf<triqs::gfs::cartesian_product<triqs::gfs::retime, triqs::gfs::imtime> >",
-             read_only= False,
-             doc = """""")
-
 c.add_constructor("""(**constructor_p)""", doc = """
 +----------------+-------------------------------------------------------------------------------------------+---------+---------------+
 | Parameter Name | Type                                                                                      | Default | Documentation |
 +================+===========================================================================================+=========+===============+
 | gf_struct      | triqs::hilbert_space::gf_struct_t                                                         |         |               |
-+----------------+-------------------------------------------------------------------------------------------+---------+---------------+
-| beta           | double                                                                                    |         |               |
-+----------------+-------------------------------------------------------------------------------------------+---------+---------------+
-| n_tau          | int                                                                                       |         |               |
 +----------------+-------------------------------------------------------------------------------------------+---------+---------------+
 | t_max          | double                                                                                    |         |               |
 +----------------+-------------------------------------------------------------------------------------------+---------+---------------+
@@ -216,18 +139,21 @@ c.add_constructor("""(**constructor_p)""", doc = """
 
 c.add_method("""void solve (**solve_p)""",
              doc = """
-+---------------------+-------------------------------------------------------------------------------------------+---------+---------------+
-| Parameter Name      | Type                                                                                      | Default | Documentation |
-+=====================+===========================================================================================+=========+===============+
-| hamilt              | std::function<triqs::operators::many_body_operator_generic<std::complex<double>>(double)> |         |               |
-+---------------------+-------------------------------------------------------------------------------------------+---------+---------------+
-| tolerance           | double                                                                                    | 1e-6    |               |
-+---------------------+-------------------------------------------------------------------------------------------+---------+---------------+
-| eq_solver           | bool                                                                                      | false   |               |
-+---------------------+-------------------------------------------------------------------------------------------+---------+---------------+
-| recompute_subspaces | bool                                                                                      | true    |               |
-+---------------------+-------------------------------------------------------------------------------------------+---------+---------------+
++--------------------------+-------------------------------------------------------------------------------------------+---------+---------------+
+| Parameter Name           | Type                                                                                      | Default | Documentation |
++==========================+===========================================================================================+=========+===============+
+| R_init                   | std::vector<triqs::arrays::array<std::complex<double>,2>>                                 |         |               |
++--------------------------+-------------------------------------------------------------------------------------------+---------+---------------+
+| hamilt                   | std::function<triqs::operators::many_body_operator_generic<std::complex<double>>(double)> |         |               |
++--------------------------+-------------------------------------------------------------------------------------------+---------+---------------+
+| tolerance                | double                                                                                    | 1e-6    |               |
++--------------------------+-------------------------------------------------------------------------------------------+---------+---------------+
+| recompute_subspaces      | bool                                                                                      | true    |               |
++--------------------------+-------------------------------------------------------------------------------------------+---------+---------------+
 """)
+
+c.add_method("void initialize_atom_diag (std::function<triqs::operators::many_body_operator_generic<std::complex<double>>(double)> function)",
+               doc = """""")
 
 c.add_method("std::complex<double> get_Z()",
                doc = """""")
@@ -241,6 +167,11 @@ c = converter_(
         doc = """""",
 )
 
+c.add_member(c_name = "R_init",
+             c_type = "std::vector<triqs::arrays::array<std::complex<double>,2>>",
+             initializer = """  """,
+             doc = """""")
+
 c.add_member(c_name = "hamilt",
     c_type = "std::function<triqs::operators::many_body_operator_generic<std::complex<double>>(double)>",
              initializer = """  """,
@@ -249,11 +180,6 @@ c.add_member(c_name = "hamilt",
 c.add_member(c_name = "tolerance",
              c_type = "double",
              initializer = """ 1e-6 """,
-             doc = """""")
-
-c.add_member(c_name = "eq_solver",
-             c_type = "bool",
-             initializer = """ false """,
              doc = """""")
 
 c.add_member(c_name = "recompute_subspaces",
@@ -271,16 +197,6 @@ c = converter_(
 c.add_member(c_name = "gf_struct",
              c_type = "triqs::hilbert_space::gf_struct_t",
              initializer = """  """,
-             doc = """""")
-
-c.add_member(c_name = "beta",
-             c_type = "double",
-             initializer = """  """,
-             doc = """""")
-
-c.add_member(c_name = "n_tau",
-             c_type = "int",
-             initializer = """ """,
              doc = """""")
 
 c.add_member(c_name = "t_max",

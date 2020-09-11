@@ -9,12 +9,6 @@ struct constructor_p {
   // block structure of the gf
   triqs::hilbert_space::gf_struct_t gf_struct;
 
-  // inverse temperature
-  double beta;
-
-  // number of imaginary time points
-  int n_tau;
-
   // max real time
   double t_max;
 
@@ -26,17 +20,16 @@ struct constructor_p {
 
 struct solve_p {
 
+  std::vector<triqs::arrays::array<std::complex<double>,2>> R_init;
+
   // hamiltonian
   // type: Operator
   std::function<triqs::operators::many_body_operator_generic<std::complex<double>>(double)> hamilt;
 
-  // A boolean that tells if we have to recompute the atom diag subspaces
   bool recompute_subspaces = true;
 
   // convergence tolerence (not used yet)
   double tolerance = 1e-6;
-
-  bool eq_solver = false;
 
 };
 
@@ -50,8 +43,8 @@ struct parameters: constructor_p, solve_p {
 
   void update(solve_p const & s) {
     tolerance = s.tolerance;
+    R_init = s.R_init;
     hamilt = s.hamilt;
-    eq_solver = s.eq_solver;
     recompute_subspaces = s.recompute_subspaces;
   }
 
